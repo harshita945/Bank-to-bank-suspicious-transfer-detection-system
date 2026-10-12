@@ -1,0 +1,134 @@
+{% extends "base.html" %}
+
+{% block title %}Execute Fund Transfer - Bank-to-Bank Detection System{% endblock %}
+{% block header_title %}Bank-to-Bank Fund Transfer & Risk Analysis{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Transfer Form Column -->
+    <div class="col-lg-7">
+        <div class="content-card">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-send-check text-primary"></i> Initiate Interbank Fund Transfer
+                </h5>
+                <span class="badge bg-light text-muted border">Live ML & Rule Scoring</span>
+            </div>
+            <div class="content-card-body">
+                <form method="POST" action="{{ url_for('transfer') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                    <!-- Sender Account -->
+                    <div class="mb-3">
+                        <label for="senderAccountSelect" class="form-label fw-semibold small">Originating (Sender) Account</label>
+                        <select class="form-select" id="senderAccountSelect" name="sender_account_id" required>
+                            <option value="" disabled selected>-- Select Sender Bank Account --</option>
+                            {% for a in accounts %}
+                            <option value="{{ a.id }}" data-balance="{{ a.balance }}">
+                                [{{ a.bank_code }}] {{ a.account_number }} - {{ a.account_holder_name }} (Avail: ₹{{ "{:,.2f}".format(a.balance) }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                        <div id="availableBalanceDisplay" class="mt-1"></div>
+                    </div>
+
+                    <!-- Receiver Account -->
+                    <div class="mb-3">
+                        <label for="receiverAccountSelect" class="form-label fw-semibold small">Beneficiary (Receiver) Account</label>
+                        <select class="form-select" id="receiverAccountSelect" name="receiver_account_id" required>
+                            <option value="" disabled selected>-- Select Destination Account --</option>
+                            {% for a in accounts %}
+                            <option value="{{ a.id }}">
+                                [{{ a.bank_code }}] {{ a.account_number }} - {{ a.account_holder_name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+
+                    <!-- Amount -->
+                    <div class="mb-3">
+                        <label for="amountInput" class="form-label fw-semibold small">Transfer Amount (INR)</label>
+                        <div class="input-group">
+                            <span class="input-group-text bg-light">₹</span>
+                            <input type="number" step="0.01" min="1.00" class="form-control" id="amountInput" name="amount" placeholder="e.g. 25000.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Description -->
+                    <div class="mb-3">
+                        <label for="descInput" class="form-label fw-semibold small">Payment Reference / Remarks (Optional)</label>
+                        <input type="text" class="form-control" id="descInput" name="description" placeholder="e.g. Supplier payment, consultancy invoice #402">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" style="background-color: var(--navy-primary); border-color: var(--navy-primary);">
+                        <i class="bi bi-shield-check me-1"></i> Submit Transfer & Analyze Suspicious Signals
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Demonstration Scenarios Column (Viva / Academic Evaluation) -->
+    <div class="col-lg-5">
+        <div class="content-card">
+            <div class="content-card-header bg-light">
+                <h5 class="content-card-title text-dark">
+                    <i class="bi bi-lightning-charge-fill text-warning"></i> One-Click PPT Demonstration Scenarios
+                </h5>
+            </div>
+            <div class="content-card-body">
+                <p class="small text-muted mb-3">
+                    Click any scenario below to immediately execute and verify how the hybrid engine analyzes specific financial typologies:
+                </p>
+
+                <div class="d-grid gap-3">
+                    <!-- Scenario 1 -->
+                    <form method="POST" action="{{ url_for('transfer_preset', scenario_id='normal') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-success text-start w-100 p-2">
+                            <div class="fw-bold small"><i class="bi bi-check-circle me-1"></i> Scenario 1: Normal Low-Value Transfer</div>
+                            <div class="text-muted" style="font-size: 0.76rem;">₹8,500 standard invoice payment between normal accounts (Expected: LOW risk, score &lt; 20).</div>
+                        </button>
+                    </form>
+
+                    <!-- Scenario 2 -->
+                    <form method="POST" action="{{ url_for('transfer_preset', scenario_id='high_value') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-warning text-start w-100 p-2">
+                            <div class="fw-bold small text-dark"><i class="bi bi-cash-stack me-1"></i> Scenario 2: Unusually High Value</div>
+                            <div class="text-muted" style="font-size: 0.76rem;">₹350,000 transfer exceeding threshold (Expected: MEDIUM/HIGH risk with flag).</div>
+                        </button>
+                    </form>
+
+                    <!-- Scenario 3 -->
+                    <form method="POST" action="{{ url_for('transfer_preset', scenario_id='structuring') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-primary text-start w-100 p-2">
+                            <div class="fw-bold small text-dark"><i class="bi bi-layers-half me-1"></i> Scenario 3: Potential Structuring (Smurfing)</div>
+                            <div class="text-muted" style="font-size: 0.76rem;">Repeated transfers clustered just below ₹50,000 (e.g. ₹48,500) to evade threshold.</div>
+                        </button>
+                    </form>
+
+                    <!-- Scenario 4 -->
+                    <form method="POST" action="{{ url_for('transfer_preset', scenario_id='velocity') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-outline-danger text-start w-100 p-2">
+                            <div class="fw-bold small text-dark"><i class="bi bi-speedometer me-1"></i> Scenario 4: High Velocity Burst</div>
+                            <div class="text-muted" style="font-size: 0.76rem;">4 consecutive transfers in under 10 minutes from the same account.</div>
+                        </button>
+                    </form>
+
+                    <!-- Scenario 5 -->
+                    <form method="POST" action="{{ url_for('transfer_preset', scenario_id='circular') }}">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <button type="submit" class="btn btn-danger text-start w-100 p-2">
+                            <div class="fw-bold small"><i class="bi bi-arrow-repeat me-1"></i> Scenario 5: Circular Flow (A &rarr; B &rarr; C &rarr; D &rarr; A)</div>
+                            <div class="text-muted text-white-50" style="font-size: 0.76rem;">Directed graph cycle analysis using NetworkX detecting circular fund laundering.</div>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

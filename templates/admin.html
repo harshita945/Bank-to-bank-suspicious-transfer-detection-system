@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Control Panel - BankGuard AML{% endblock %}
+{% block header_title %}System Administration & Security Control{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <!-- Active AML Thresholds Summary -->
+    <div class="col-lg-6">
+        <div class="content-card h-100 mb-0">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-sliders text-primary"></i> Active Detection Thresholds (Config)
+                </h5>
+                <span class="badge bg-light text-muted border">From config.py &amp; .env</span>
+            </div>
+            <div class="content-card-body p-0">
+                <table class="table table-bordered mb-0 small">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light w-50">High Value Threshold</th>
+                            <td class="fw-bold font-monospace text-primary">INR {{ "{:,.2f}".format(thresholds.high_amount) }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Velocity Time Window</th>
+                            <td class="fw-bold font-monospace">{{ thresholds.velocity_window }} minutes</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Velocity Count Threshold</th>
+                            <td class="fw-bold font-monospace">&ge; {{ thresholds.velocity_count }} transfers</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Structuring Range Window</th>
+                            <td class="fw-bold font-monospace">INR {{ "{:,.2f}".format(thresholds.structuring_lower) }} &ndash; {{ "{:,.2f}".format(thresholds.structuring_upper) }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Rapid Forward Window</th>
+                            <td class="fw-bold font-monospace">{{ thresholds.rapid_forward_window }} minutes</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Circular Graph Cycle Depth</th>
+                            <td class="fw-bold font-monospace">&le; {{ thresholds.circular_depth }} hops</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Authorized Users Table -->
+    <div class="col-lg-6">
+        <div class="content-card h-100 mb-0">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-people-fill text-info"></i> Authorized System Users
+                </h5>
+                <span class="badge bg-secondary-subtle text-secondary">{{ users|length }} Users</span>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom small">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Role</th>
+                            <th>Status</th>
+                            <th>Registered</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for u in users %}
+                        <tr>
+                            <td>
+                                <div class="fw-bold text-dark">{{ u.full_name }}</div>
+                                <div class="text-muted small">@{{ u.username }} &bull; {{ u.email }}</div>
+                            </td>
+                            <td>
+                                {% if u.role == 'admin' %}
+                                    <span class="badge bg-danger-subtle text-danger px-2 py-1">ADMIN</span>
+                                {% else %}
+                                    <span class="badge bg-primary-subtle text-primary px-2 py-1">ANALYST</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-success-subtle text-success">Active</span>
+                            </td>
+                            <td class="text-muted small">{{ u.created_at }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- System Audit Logs -->
+<div class="content-card">
+    <div class="content-card-header">
+        <h5 class="content-card-title">
+            <i class="bi bi-shield-check text-success"></i> Security &amp; Compliance Audit Trail
+        </h5>
+        <span class="badge bg-light text-muted border">Latest 15 Actions</span>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom small font-monospace">
+            <thead>
+                <tr>
+                    <th>Timestamp</th>
+                    <th>Action</th>
+                    <th>User</th>
+                    <th>Details</th>
+                    <th>IP Address</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in audit_logs %}
+                <tr>
+                    <td class="text-muted">{{ log.created_at }}</td>
+                    <td><span class="badge bg-light text-dark border">{{ log.action }}</span></td>
+                    <td class="fw-semibold">{{ log.username or 'System' }}</td>
+                    <td class="text-truncate" style="max-width: 320px;">{{ log.details }}</td>
+                    <td class="text-muted">{{ log.ip_address }}</td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="text-center py-3 text-muted">No audit logs recorded yet.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

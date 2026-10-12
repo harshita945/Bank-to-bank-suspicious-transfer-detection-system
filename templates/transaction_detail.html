@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction Analysis #{{ tx.transaction_ref }} - BankGuard{% endblock %}
+{% block header_title %}Explainable Transaction Risk Analysis{% endblock %}
+
+{% block content %}
+<div class="row g-4">
+    <!-- Left Column: Risk Gauge & Explainability -->
+    <div class="col-lg-5">
+        <!-- Risk Score Card -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-shield-shaded text-primary"></i> Risk Score & Category
+                </h5>
+                <span class="badge bg-light text-muted border">Explainable Composite Score</span>
+            </div>
+            <div class="content-card-body text-center">
+                <div class="risk-gauge-container mb-3">
+                    <div class="risk-circle {% if tx.risk_category == 'HIGH' %}bg-high{% elif tx.risk_category == 'MEDIUM' %}bg-medium{% else %}bg-low{% endif %}">
+                        <span class="risk-score-num">{{ tx.risk_score or 0 }}</span>
+                        <span class="risk-score-max">/ 100</span>
+                    </div>
+
+                    {% if tx.risk_category == 'HIGH' %}
+                        <span class="badge-risk badge-risk-high fs-6 px-3 py-1 mb-2">HIGH RISK (60-100)</span>
+                        <div class="small text-danger fw-semibold">Elevated probability of suspicious fund movement.</div>
+                    {% elif tx.risk_category == 'MEDIUM' %}
+                        <span class="badge-risk badge-risk-medium fs-6 px-3 py-1 mb-2">MEDIUM RISK (30-59)</span>
+                        <div class="small text-warning fw-semibold">Anomalous pattern requiring analyst verification.</div>
+                    {% else %}
+                        <span class="badge-risk badge-risk-low fs-6 px-3 py-1 mb-2">LOW RISK (0-29)</span>
+                        <div class="small text-success fw-semibold">Standard transaction within expected behavioral baseline.</div>
+                    {% endif %}
+                </div>
+
+                <!-- Score Composition Breakdown -->
+                <div class="p-3 bg-light rounded-3 text-start small border">
+                    <div class="fw-bold text-dark mb-2">Score Composition (Hybrid Model):</div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted"><i class="bi bi-gear-wide me-1"></i> Rule-Based Indicators:</span>
+                        <span class="fw-semibold">{{ flags|length }} rule(s) triggered</span>
+                    </div>
+                    <div class="d-flex justify-content-between mb-1">
+                        <span class="text-muted"><i class="bi bi-cpu me-1"></i> Random Forest ML Probability:</span>
+                        <span class="fw-semibold">{{ "{:.2f}%".format((tx.ml_probability or 0) * 100) }}</span>
+                    </div>
+                    <div class="d-flex justify-content-between">
+                        <span class="text-muted"><i class="bi bi-calculator me-1"></i> Formula:</span>
+                        <span class="text-muted" style="font-size: 0.75rem;">55% Rules + 45% ML Probability</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Investigation Recommendation Card -->
+        <div class="content-card">
+            <div class="content-card-header bg-light">
+                <h5 class="content-card-title text-dark">
+                    <i class="bi bi-clipboard-check text-info"></i> Recommended Investigation Action
+                </h5>
+            </div>
+            <div class="content-card-body">
+                <div class="p-3 rounded-3 {% if tx.risk_category == 'HIGH' %}bg-danger-subtle border border-danger-subtle text-danger-emphasis{% elif tx.risk_category == 'MEDIUM' %}bg-warning-subtle border border-warning-subtle text-warning-emphasis{% else %}bg-success-subtle border border-success-subtle text-success-emphasis{% endif %}">
+                    <div class="fw-bold mb-1"><i class="bi bi-info-circle me-1"></i> Next Steps for Compliance:</div>
+                    <p class="small mb-0">{{ tx.recommendation }}</p>
+                </div>
+                <div class="text-muted small mt-2 fst-italic">
+                    * Academic Disclaimer: This system aids human decision-making and does not prove financial crime autonomously.
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Right Column: Details, Explainable Reasons & Network Graph -->
+    <div class="col-lg-7">
+        <!-- Detection Reasons & Circular Path -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-search text-danger"></i> Explainable Detection Indicators
+                </h5>
+                <span class="badge bg-secondary-subtle text-secondary border">{{ flags|length }} Flags</span>
+            </div>
+            <div class="content-card-body">
+                <!-- Circular Graph Flow Box if present -->
+                {% if 'CIRCULAR_TRANSFER_CYCLE' in flags %}
+                <div class="alert alert-danger border-danger">
+                    <div class="fw-bold mb-1"><i class="bi bi-arrow-repeat text-danger me-1"></i> NetworkX Circular Transfer Loop Identified:</div>
+                    <div class="cycle-flow">
+                        <span class="cycle-node">{{ tx.sender_acc }}</span>
+                        <span class="cycle-arrow">&rarr;</span>
+                        <span class="cycle-node">{{ tx.receiver_acc }}</span>
+                        <span class="cycle-arrow">&rarr;</span>
+                        <span class="cycle-node">Intermediary Node(s)</span>
+                        <span class="cycle-arrow">&rarr;</span>
+                        <span class="cycle-node">{{ tx.sender_acc }}</span>
+                    </div>
+                    <div class="small text-danger">Funds complete a full cycle back to origin, characteristic of circular layering or tax evasion schemes.</div>
+                </div>
+                {% endif %}
+
+                <!-- Detailed Reasons List -->
+                <div class="mb-3">
+                    <h6 class="fw-bold small text-muted text-uppercase mb-2">Detailed Reason Logs:</h6>
+                    <ul class="list-group list-group-flush border rounded-3">
+                        {% for r in explanations %}
+                        <li class="list-group-item d-flex align-items-start gap-2 py-2 small">
+                            <i class="bi bi-exclamation-triangle-fill text-warning flex-shrink-0 mt-1"></i>
+                            <div>{{ r }}</div>
+                        </li>
+                        {% else %}
+                        <li class="list-group-item text-muted small py-3">
+                            <i class="bi bi-check-circle-fill text-success me-1"></i> No suspicious rule triggers recorded. Transaction exhibits normal parameters.
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <!-- Triggered Rule Badges -->
+                {% if flags %}
+                <div>
+                    <h6 class="fw-bold small text-muted text-uppercase mb-2">Rule Indicator Tags:</h6>
+                    <div class="d-flex flex-wrap gap-2">
+                        {% for f in flags %}
+                        <span class="badge bg-dark-subtle text-dark border px-2 py-1 small">
+                            <i class="bi bi-tag-fill text-primary me-1"></i> {{ f }}
+                        </span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Transaction Specifications Table -->
+        <div class="content-card">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-receipt text-primary"></i> Transaction Specifications
+                </h5>
+                <span class="badge-status {% if tx.status == 'COMPLETED' %}badge-status-completed{% elif tx.status == 'FLAGGED' %}badge-status-flagged{% else %}badge-status-review{% endif %}">
+                    {{ tx.status }}
+                </span>
+            </div>
+            <div class="content-card-body p-0">
+                <table class="table table-bordered mb-0 small">
+                    <tbody>
+                        <tr>
+                            <th class="bg-light text-muted w-25">Transaction Ref</th>
+                            <td class="fw-bold font-monospace">{{ tx.transaction_ref }}</td>
+                            <th class="bg-light text-muted w-25">Timestamp</th>
+                            <td>{{ tx.transaction_time }}</td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light text-muted">Sender Account</th>
+                            <td>
+                                <span class="fw-semibold">{{ tx.sender_name }}</span><br>
+                                <code>{{ tx.sender_acc }}</code> ({{ tx.sender_bank_name }} - {{ tx.sender_bank_code }})
+                            </td>
+                            <th class="bg-light text-muted">Receiver Account</th>
+                            <td>
+                                <span class="fw-semibold">{{ tx.receiver_name }}</span><br>
+                                <code>{{ tx.receiver_acc }}</code> ({{ tx.receiver_bank_name }} - {{ tx.receiver_bank_code }})
+                            </td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light text-muted">Transfer Amount</th>
+                            <td class="fs-5 fw-bold text-primary">₹{{ "{:,.2f}".format(tx.amount) }}</td>
+                            <th class="bg-light text-muted">Description / Remarks</th>
+                            <td>{{ tx.description or 'N/A' }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="content-card-footer p-3 bg-light d-flex justify-content-between align-items-center">
+                <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-secondary">
+                    <i class="bi bi-arrow-left me-1"></i> Return to Transactions
+                </a>
+                {% if alert %}
+                <a href="{{ url_for('alerts') }}" class="btn btn-sm btn-outline-danger">
+                    <i class="bi bi-exclamation-octagon me-1"></i> Review Linked Alert ({{ alert.alert_ref }})
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

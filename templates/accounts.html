@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+
+{% block title %}Demo Bank Accounts - BankGuard{% endblock %}
+{% block header_title %}Participating Banks & Fictional Accounts{% endblock %}
+
+{% block content %}
+<div class="row g-4 mb-4">
+    <div class="col-12">
+        <div class="alert alert-info border-info d-flex align-items-center gap-2 mb-0">
+            <i class="bi bi-info-circle-fill fs-5 text-info"></i>
+            <div>
+                <strong>Academic Demonstration Note:</strong> These accounts simulate customer ledgers across multiple participating banks to evaluate inter-bank fund flow analysis and NetworkX graph cycle detection.
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="content-card">
+    <div class="content-card-header">
+        <h5 class="content-card-title">
+            <i class="bi bi-bank2 text-primary"></i> Bank Accounts Directory ({{ accounts|length }} Accounts)
+        </h5>
+        <a href="{{ url_for('transfer') }}" class="btn btn-sm btn-primary" style="background-color: var(--navy-primary); border-color: var(--navy-primary);">
+            <i class="bi bi-arrow-left-right me-1"></i> New Transfer
+        </a>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Account Number</th>
+                    <th>Account Holder</th>
+                    <th>Bank Institution</th>
+                    <th>IFSC / SWIFT</th>
+                    <th>Account Type</th>
+                    <th>Current Balance (INR)</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for a in accounts %}
+                <tr>
+                    <td class="fw-bold font-monospace text-dark">{{ a.account_number }}</td>
+                    <td class="fw-semibold">{{ a.account_holder_name }}</td>
+                    <td>
+                        <span class="badge bg-light text-dark border">{{ a.bank_code }}</span>
+                        <span class="ms-1 small">{{ a.bank_name }}</span>
+                    </td>
+                    <td class="font-monospace small text-muted">{{ a.swift_ifsc }}</td>
+                    <td>
+                        <span class="badge bg-secondary-subtle text-secondary small">{{ a.account_type }}</span>
+                    </td>
+                    <td class="fw-bold fs-6 text-dark">₹{{ "{:,.2f}".format(a.balance) }}</td>
+                    <td>
+                        <span class="badge bg-success-subtle text-success border px-2 py-1 small">{{ a.status }}</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-4 text-muted">No demo accounts registered.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

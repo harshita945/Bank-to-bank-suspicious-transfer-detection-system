@@ -1,0 +1,439 @@
+/* ==============================================================
+   Bank-to-Bank Suspicious Transaction Detection System
+   Modern Banking & Financial Security Dashboard Styles
+   ============================================================== */
+
+:root {
+    --navy-primary: #0a192f;
+    --navy-secondary: #112240;
+    --navy-light: #233554;
+    --accent-blue: #0284c7;
+    --accent-blue-hover: #0369a1;
+    --accent-cyan: #38bdf8;
+    --text-primary: #1e293b;
+    --text-muted: #64748b;
+    --bg-light: #f8fafc;
+    --card-bg: #ffffff;
+    --border-color: #e2e8f0;
+    
+    /* Risk Badges */
+    --risk-low: #10b981;
+    --risk-low-bg: #d1fae5;
+    --risk-med: #f59e0b;
+    --risk-med-bg: #fef3c7;
+    --risk-high: #ef4444;
+    --risk-high-bg: #fee2e2;
+
+    --sidebar-width: 260px;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--bg-light);
+    color: var(--text-primary);
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* ==============================================================
+   Layout Architecture: Sidebar & Content
+   ============================================================== */
+
+.app-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar Styling */
+.app-sidebar {
+    width: var(--sidebar-width);
+    background-color: var(--navy-primary);
+    color: #e2e8f0;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+    z-index: 1000;
+}
+
+.sidebar-brand {
+    padding: 1.5rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #ffffff;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    text-decoration: none;
+}
+
+.sidebar-brand i {
+    color: var(--accent-cyan);
+    font-size: 1.5rem;
+}
+
+.sidebar-nav {
+    list-style: none;
+    padding: 1rem 0.75rem;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar-nav .nav-item {
+    margin-bottom: 0.35rem;
+}
+
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.75rem 1rem;
+    color: #94a3b8;
+    border-radius: 8px;
+    font-size: 0.92rem;
+    font-weight: 500;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+
+.sidebar-nav .nav-link i {
+    font-size: 1.15rem;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-nav .nav-link:hover {
+    color: #ffffff;
+    background-color: var(--navy-secondary);
+}
+
+.sidebar-nav .nav-link.active {
+    color: #ffffff;
+    background-color: var(--accent-blue);
+    font-weight: 600;
+}
+
+.sidebar-footer {
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: rgba(0, 0, 0, 0.15);
+}
+
+.user-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--accent-blue);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+/* Main Content Area */
+.app-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+/* Top Navbar */
+.app-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid var(--border-color);
+    padding: 0.85rem 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.page-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--navy-primary);
+    margin: 0;
+}
+
+/* Page Body Container */
+.page-container {
+    padding: 2rem;
+    flex-grow: 1;
+}
+
+/* ==============================================================
+   Cards & KPI Metrics
+   ============================================================== */
+
+.metric-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.35rem 1.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    height: 100%;
+}
+
+.metric-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.metric-title {
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.05em;
+    margin: 0;
+}
+
+.metric-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+.icon-blue { background-color: #e0f2fe; color: #0284c7; }
+.icon-green { background-color: var(--risk-low-bg); color: var(--risk-low); }
+.icon-amber { background-color: var(--risk-med-bg); color: var(--risk-med); }
+.icon-red { background-color: var(--risk-high-bg); color: var(--risk-high); }
+.icon-purple { background-color: #ede9fe; color: #7c3aed; }
+
+.metric-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--navy-primary);
+    margin-bottom: 0.25rem;
+}
+
+.metric-sub {
+    font-size: 0.82rem;
+    color: var(--text-muted);
+}
+
+/* Custom Surface Card */
+.content-card {
+    background: var(--card-bg);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+}
+
+.content-card-header {
+    padding: 1.15rem 1.5rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #ffffff;
+}
+
+.content-card-title {
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: var(--navy-primary);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.content-card-body {
+    padding: 1.5rem;
+}
+
+/* ==============================================================
+   Risk Badges & Tags
+   ============================================================== */
+
+.badge-risk {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 20px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+}
+
+.badge-risk-high {
+    background-color: var(--risk-high-bg);
+    color: #b91c1c;
+    border: 1px solid #fca5a5;
+}
+
+.badge-risk-medium {
+    background-color: var(--risk-med-bg);
+    color: #b45309;
+    border: 1px solid #fcd34d;
+}
+
+.badge-risk-low {
+    background-color: var(--risk-low-bg);
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+
+.badge-status {
+    padding: 0.3rem 0.65rem;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.badge-status-completed { background-color: #dcfce7; color: #15803d; }
+.badge-status-flagged { background-color: #fee2e2; color: #b91c1c; }
+.badge-status-review { background-color: #fef3c7; color: #b45309; }
+
+/* ==============================================================
+   Risk Gauge Circle Indicator
+   ============================================================== */
+
+.risk-gauge-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+}
+
+.risk-circle {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: #ffffff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    margin-bottom: 0.75rem;
+}
+
+.risk-circle.bg-high { background: linear-gradient(135deg, #ef4444, #b91c1c); }
+.risk-circle.bg-medium { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.risk-circle.bg-low { background: linear-gradient(135deg, #10b981, #059669); }
+
+.risk-score-num {
+    font-size: 2.2rem;
+    line-height: 1;
+}
+
+.risk-score-max {
+    font-size: 0.75rem;
+    opacity: 0.85;
+}
+
+/* ==============================================================
+   Circular Transfer Flow Diagram
+   ============================================================== */
+
+.cycle-flow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.75rem;
+    background-color: #fff1f2;
+    border: 1px dashed #fda4af;
+    padding: 1rem 1.25rem;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+.cycle-node {
+    background-color: #ffffff;
+    border: 2px solid #e11d48;
+    color: #e11d48;
+    font-weight: 700;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+
+.cycle-arrow {
+    color: #e11d48;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+/* ==============================================================
+   Table Styling
+   ============================================================== */
+
+.table-custom {
+    margin-bottom: 0;
+    font-size: 0.88rem;
+}
+
+.table-custom th {
+    background-color: #f8fafc;
+    color: var(--text-muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 600;
+    padding: 0.85rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-custom td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.table-custom tbody tr:hover {
+    background-color: #f8fafc;
+}
+
+/* ==============================================================
+   Responsive Queries
+   ============================================================== */
+
+@media (max-width: 992px) {
+    .app-sidebar {
+        width: 72px;
+    }
+    .sidebar-brand span,
+    .sidebar-nav .nav-link span,
+    .sidebar-footer .user-details {
+        display: none;
+    }
+    .sidebar-nav .nav-link {
+        justify-content: center;
+        padding: 0.75rem 0;
+    }
+    .page-container {
+        padding: 1rem;
+    }
+}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+
+{% block title %}Reports & Analytics - BankGuard{% endblock %}
+{% block header_title %}Compliance Reports & Export Center{% endblock %}
+
+{% block content %}
+<!-- Export Action Cards -->
+<div class="row g-3 mb-4">
+    <div class="col-md-6">
+        <div class="content-card mb-0 h-100">
+            <div class="content-card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-file-earmark-spreadsheet text-success me-2"></i> Transactions Ledger CSV</h5>
+                    <p class="small text-muted mb-0">Export complete transaction log including calculated risk scores, flags, and ML probabilities.</p>
+                </div>
+                <a href="{{ url_for('export_transactions_csv') }}" class="btn btn-outline-success">
+                    <i class="bi bi-download me-1"></i> Download CSV
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="content-card mb-0 h-100">
+            <div class="content-card-body d-flex justify-content-between align-items-center">
+                <div>
+                    <h5 class="fw-bold mb-1"><i class="bi bi-shield-exclamation text-danger me-2"></i> Suspicious Alerts Report CSV</h5>
+                    <p class="small text-muted mb-0">Export active and resolved AML alerts with analyst dispositions and detection reasons.</p>
+                </div>
+                <a href="{{ url_for('export_alerts_csv') }}" class="btn btn-outline-danger">
+                    <i class="bi bi-download me-1"></i> Download CSV
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bank-wise Volume Breakdown & Chart -->
+<div class="row g-4">
+    <div class="col-lg-6">
+        <div class="content-card mb-0 h-100">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-bar-chart-line text-info"></i> Inter-Bank Volume Distribution
+                </h5>
+            </div>
+            <div class="content-card-body">
+                <div style="height: 280px;">
+                    <canvas id="bankVolumeChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-6">
+        <div class="content-card mb-0 h-100">
+            <div class="content-card-header">
+                <h5 class="content-card-title">
+                    <i class="bi bi-bank text-primary"></i> Bank-Wise Transaction Summary Table
+                </h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Bank Institution</th>
+                            <th>Code</th>
+                            <th>Transfers</th>
+                            <th>Total Volume (INR)</th>
+                            <th>Flagged</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for b in bank_summary %}
+                        <tr>
+                            <td class="fw-semibold">{{ b.bank_name }}</td>
+                            <td><span class="badge bg-light text-dark border">{{ b.bank_code }}</span></td>
+                            <td>{{ b.total_tx_count }}</td>
+                            <td class="fw-bold">₹{{ "{:,.2f}".format(b.total_volume) }}</td>
+                            <td>
+                                {% if b.flagged_count > 0 %}
+                                    <span class="badge bg-danger-subtle text-danger px-2">{{ b.flagged_count }}</span>
+                                {% else %}
+                                    <span class="badge bg-success-subtle text-success px-2">0</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

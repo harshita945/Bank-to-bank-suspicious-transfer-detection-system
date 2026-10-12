@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+
+{% block title %}Transaction Monitoring - Bank-to-Bank Detection System{% endblock %}
+{% block header_title %}Transaction Monitoring & Audit History{% endblock %}
+
+{% block content %}
+<!-- Filter Controls Bar -->
+<div class="content-card mb-4">
+    <div class="content-card-body p-3">
+        <form method="GET" action="{{ url_for('transactions') }}" class="row g-2 align-items-center">
+            <!-- Search Text -->
+            <div class="col-md-3">
+                <div class="input-group input-group-sm">
+                    <span class="input-group-text bg-light"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" name="search" placeholder="Search ref, acc no, holder..." value="{{ search }}">
+                </div>
+            </div>
+
+            <!-- Bank Filter -->
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="bank">
+                    <option value="">All Banks</option>
+                    {% for b in banks %}
+                    <option value="{{ b.bank_code }}" {% if bank_filter == b.bank_code %}selected{% endif %}>
+                        {{ b.bank_code }} - {{ b.bank_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Risk Filter -->
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="risk">
+                    <option value="">All Risk Levels</option>
+                    <option value="HIGH" {% if risk_filter == 'HIGH' %}selected{% endif %}>High Risk (60-100)</option>
+                    <option value="MEDIUM" {% if risk_filter == 'MEDIUM' %}selected{% endif %}>Medium Risk (30-59)</option>
+                    <option value="LOW" {% if risk_filter == 'LOW' %}selected{% endif %}>Low Risk (0-29)</option>
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div class="col-md-2">
+                <select class="form-select form-select-sm" name="status">
+                    <option value="">All Statuses</option>
+                    <option value="COMPLETED" {% if status_filter == 'COMPLETED' %}selected{% endif %}>COMPLETED</option>
+                    <option value="FLAGGED" {% if status_filter == 'FLAGGED' %}selected{% endif %}>FLAGGED</option>
+                    <option value="UNDER_REVIEW" {% if status_filter == 'UNDER_REVIEW' %}selected{% endif %}>UNDER REVIEW</option>
+                </select>
+            </div>
+
+            <!-- Submit & Reset -->
+            <div class="col-md-3 d-flex gap-2">
+                <button type="submit" class="btn btn-sm btn-primary flex-grow-1" style="background-color: var(--navy-primary); border-color: var(--navy-primary);">
+                    <i class="bi bi-funnel-fill me-1"></i> Apply Filters
+                </button>
+                <a href="{{ url_for('transactions') }}" class="btn btn-sm btn-outline-secondary" title="Reset Filters">
+                    <i class="bi bi-arrow-counterclockwise"></i>
+                </a>
+                <a href="{{ url_for('export_transactions_csv') }}" class="btn btn-sm btn-outline-success" title="Export Filtered CSV">
+                    <i class="bi bi-filetype-csv me-1"></i> CSV
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Transactions Table -->
+<div class="content-card">
+    <div class="content-card-header">
+        <h5 class="content-card-title">
+            <i class="bi bi-list-columns text-primary"></i> Transactions Log ({{ "{:,}".format(total_records) }} Records)
+        </h5>
+        <div class="small text-muted">Page {{ current_page }} of {{ total_pages }}</div>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-custom">
+            <thead>
+                <tr>
+                    <th>Ref ID & Time</th>
+                    <th>Originator (Sender)</th>
+                    <th>Beneficiary (Receiver)</th>
+                    <th>Amount (INR)</th>
+                    <th>Risk Score</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for t in transactions %}
+                <tr>
+                    <td>
+                        <span class="fw-semibold text-dark font-monospace">{{ t.transaction_ref }}</span>
+                        <div class="text-muted small" style="font-size: 0.75rem;">{{ t.transaction_time }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ t.sender_name }}</div>
+                        <div class="small text-muted font-monospace"><span class="badge bg-light text-dark border">{{ t.sender_bank }}</span> {{ t.sender_acc }}</div>
+                    </td>
+                    <td>
+                        <div class="fw-semibold text-dark">{{ t.receiver_name }}</div>
+                        <div class="small text-muted font-monospace"><span class="badge bg-light text-dark border">{{ t.receiver_bank }}</span> {{ t.receiver_acc }}</div>
+                    </td>
+                    <td class="fw-bold fs-6">₹{{ "{:,.2f}".format(t.amount) }}</td>
+                    <td>
+                        {% if t.risk_category == 'HIGH' %}
+                            <span class="badge-risk badge-risk-high"><i class="bi bi-shield-x"></i> {{ t.risk_score }}/100</span>
+                        {% elif t.risk_category == 'MEDIUM' %}
+                            <span class="badge-risk badge-risk-medium"><i class="bi bi-shield-exclamation"></i> {{ t.risk_score }}/100</span>
+                        {% else %}
+                            <span class="badge-risk badge-risk-low"><i class="bi bi-shield-check"></i> {{ t.risk_score or 0 }}/100</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if t.status == 'COMPLETED' %}
+                            <span class="badge-status badge-status-completed">COMPLETED</span>
+                        {% elif t.status == 'FLAGGED' %}
+                            <span class="badge-status badge-status-flagged">FLAGGED</span>
+                        {% else %}
+                            <span class="badge-status badge-status-review">{{ t.status }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <a href="{{ url_for('analysis_result', tx_id=t.id) }}" class="btn btn-sm btn-outline-primary py-1 px-2" title="Inspect Full Analysis & Rules">
+                            <i class="bi bi-eye"></i> Details
+                        </a>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-2 d-block mb-2"></i> No transactions found matching selected criteria.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination Controls -->
+    {% if total_pages > 1 %}
+    <div class="content-card-footer p-3 bg-white border-top d-flex justify-content-between align-items-center">
+        <div class="small text-muted">
+            Showing records {{ ((current_page - 1) * 15) + 1 }} to {{ [current_page * 15, total_records]|min }} of {{ total_records }}
+        </div>
+        <nav aria-label="Page navigation">
+            <ul class="pagination pagination-sm mb-0">
+                <li class="page-item {% if current_page <= 1 %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('transactions', page=current_page-1, search=search, bank=bank_filter, risk=risk_filter, status=status_filter) }}">Previous</a>
+                </li>
+                {% for p in range(1, total_pages + 1) %}
+                    {% if p == current_page or (p <= current_page + 2 and p >= current_page - 2) %}
+                    <li class="page-item {% if p == current_page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('transactions', page=p, search=search, bank=bank_filter, risk=risk_filter, status=status_filter) }}">{{ p }}</a>
+                    </li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {% if current_page >= total_pages %}disabled{% endif %}">
+                    <a class="page-link" href="{{ url_for('transactions', page=current_page+1, search=search, bank=bank_filter, risk=risk_filter, status=status_filter) }}">Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
